@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gerçek mi, Yapay mı? – Dijital Dedektifler</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2540;--mute:#5b6485;--line:#dde2f0;--pri:#3b5bdb;--pri-ink:#fff;--ok:#2b8a3e;--okbg:#e6f6ea;--no:#c92a2a;--nobg:#fdeaea;--dur:#e8590c;--bak:#1c7ed6;--dog:#2f9e44;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11162a;--card:#1b2240;--ink:#eef1fb;--mute:#a7afcf;--line:#2e3760;--pri:#748ffc;--pri-ink:#11162a;--ok:#69db7c;--okbg:#17321f;--no:#ff8787;--nobg:#3a1c1c;--dur:#ff922b;--bak:#74c0fc;--dog:#8ce99a}}
+:root[data-theme="dark"]{--bg:#11162a;--card:#1b2240;--ink:#eef1fb;--mute:#a7afcf;--line:#2e3760;--pri:#748ffc;--pri-ink:#11162a;--ok:#69db7c;--okbg:#17321f;--no:#ff8787;--nobg:#3a1c1c;--dur:#ff922b;--bak:#74c0fc;--dog:#8ce99a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;line-height:1.2;margin:.2em 0 .3em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 0}
+.mute{color:var(--mute)}
+.badge{display:inline-block;font-weight:700;font-size:.8rem;padding:3px 10px;border-radius:99px;color:#fff}
+.dur{background:var(--dur)}.bak{background:var(--bak)}.dog{background:var(--dog)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.steps div{border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;font-size:.85rem}
+.steps b{display:block;font-size:1rem}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--pri);color:var(--pri-ink);border:0;border-radius:14px;padding:13px 22px;font-weight:700;font-size:1rem;width:100%;margin-top:8px}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:13px 14px;margin:9px 0}
+.opt:hover:not(:disabled){border-color:var(--pri)}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.no{border-color:var(--no);background:var(--nobg)}
+.opt:disabled{cursor:default}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--pri);transition:width .3s}
+.top{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px}
+.scene{font-size:3rem;text-align:center;margin:0 0 6px}
+.say{background:var(--bg);border-left:5px solid var(--pri);border-radius:10px;padding:12px 14px;margin:10px 0}
+.fb{border-radius:14px;padding:14px;margin-top:12px}
+.fb.ok{background:var(--okbg)}.fb.no{background:var(--nobg)}
+.rank{font-size:3.2rem;text-align:center}
+.score{font-size:2.2rem;font-weight:800;text-align:center}
+.sv{width:100%;height:auto;display:block;border-radius:12px;background:#000}.clue{opacity:0;transition:opacity .4s}.reveal .clue,.clue.found{opacity:1}.clue,.clue *{pointer-events:all;cursor:pointer}.ph{font-style:italic;color:var(--mute);border:1px dashed var(--line);border-radius:8px;padding:2px 8px}ul{padding-left:20px}@media print{.noprint,footer{display:none}body{background:#fff}}.fl{display:block;font-weight:700;font-size:.85rem;margin:10px 0 4px}.fi{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:9px;resize:vertical}.fi:focus{outline:none;border-color:var(--pri)}.sm{font:inherit;background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:700;margin:6px 6px 0 0;cursor:pointer}@keyframes wv{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}.wv{transform-box:fill-box;transform-origin:center;animation:wv .8s ease-in-out infinite}@media (prefers-reduced-motion:reduce){.wv{animation:none}}
+.visbox{position:relative;overflow:hidden;border-radius:12px}
+.visbox.xray svg,.visbox.xray img{filter:contrast(1.35) saturate(1.4) hue-rotate(15deg)}
+.lens{position:absolute;width:110px;height:110px;border:3px solid var(--pri);border-radius:50%;pointer-events:none;box-shadow:0 0 0 9999px rgba(17,22,42,.38),inset 0 0 18px rgba(116,143,252,.5);transform:translate(-50%,-50%);display:none;z-index:5}
+.visbox.loupe-on .lens{display:block}
+.abgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+@media(max-width:520px){.abgrid{grid-template-columns:1fr}}
+.abcard{border:2px solid var(--line);border-radius:14px;padding:12px;background:var(--bg);cursor:pointer;text-align:left;transition:border-color .2s,transform .15s}
+.abcard:hover{border-color:var(--pri);transform:translateY(-2px)}
+.abcard.ok{border-color:var(--ok);background:var(--okbg)}
+.abcard.no{border-color:var(--no);background:var(--nobg)}
+.cert-wrap{margin-top:14px;text-align:center}
+.cert-canvas{width:100%;max-width:560px;height:auto;border-radius:14px;border:2px solid var(--line);display:block;margin:10px auto}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hide{display:none}
+footer{font-size:.8rem;color:var(--mute);text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="start">
+  <div class="toolbar">
+    <p class="mute" style="margin:0">🔎 <span id="team"></span></p>
+    <button class="sm" id="sndbtn" style="margin:0;padding:5px 10px;font-size:.8rem" title="Ses efektlerini aç/kapat">🔔 Ses Açık</button>
+  </div>
+  <h1>Gerçek mi, Yapay mı?<br>Dijital Dedektifler</h1>
+  <p>Yapay zekâ çağında her gördüğün gerçek olmayabilir. Kısa görevlerde ipuçlarını bul, karşılaştırmaları çöz ve <b>Dedektif rozetini</b> kazan!</p>
+  <div class="steps">
+    <div><span class="badge dur">1</span><b>DUR</b>Hemen inanma, paylaşma</div>
+    <div><span class="badge bak">2</span><b>BAK</b>İpuçlarını ara</div>
+    <div><span class="badge dog">3</span><b>DOĞRULA</b>Güvenilir kaynağa sor</div>
+  </div>
+  <div id="custombanner" class="card hide" style="border-color:var(--pri)"></div>
+  <div id="vid" class="card hide"></div>
+  <button class="btn" id="go">Göreve Başla</button>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <button class="btn" id="abopen" style="margin:0;background:var(--bak);color:#fff">⚖️ Gerçek vs Yapay Lab</button>
+    <button class="btn" id="wopen" style="margin:0;background:var(--dog);color:#fff">🛠️ Vaka Atölyesi</button>
+  </div>
+  <button class="btn" id="dopen" style="background:transparent;color:var(--ink);border:2px solid var(--line)">📓 Yapay Zekâ Kullanım Defteri</button>
+  <button class="btn" id="jopen" style="background:transparent;color:var(--ink);border:2px solid var(--line)">📋 Jüri & Öğretmen Özet Ekranı</button>
+  <div class="card mute" style="font-size:.9rem">Bu oyundaki tüm senaryolar kurgusaldır; gerçek kişi, görüntü veya ses içermez. Oyun kişisel bilgi istemez ve hiçbir veri kaydetmez.</div>
+</section>
+
+<section id="play" class="hide">
+  <div class="top"><span id="qn"></span><span id="sc"></span></div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="card">
+    <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">
+      <button class="sm" id="loupebtn" style="margin:0;padding:4px 10px;font-size:.8rem" title="Görsel üzerinde dedektif lensini gezdir">🔍 Dedektif Lensi</button>
+      <button class="sm" id="xraybtn" style="margin:0;padding:4px 10px;font-size:.8rem" title="Kontrast ve detay filtresi">🧪 Detay Filtresi</button>
+    </div>
+    <div class="visbox" id="visbox">
+      <div class="lens" id="lens"></div>
+      <div class="scene" id="ic"></div>
+    </div>
+    <div class="mute" id="hunt" style="font-size:.9rem;margin:6px 0"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:.2em 0">
+      <h2 id="qt" style="margin:0;font-size:1.15rem"></h2>
+      <button class="sm" id="speak" style="margin:0;padding:5px 10px;font-size:.82rem;white-space:nowrap" title="Senaryoyu sesli dinle">🔊 Dinle</button>
+    </div>
+    <div class="say" id="qs"></div>
+    <div id="opts"></div>
+    <div id="fb" class="fb hide"></div>
+    <button class="btn hide" id="next">Sonraki</button>
+  </div>
+</section>
+
+<section id="ablab" class="hide">
+  <h1>⚖️ Gerçek vs. Yapay Laboratuvarı</h1>
+  <p class="mute">İki örneği yan yana incele; hangisinin <b>yapay zekâ üretimi veya manipüle edilmiş</b> olduğunu bul!</p>
+  <div class="card">
+    <div class="top"><span id="abn"></span><span id="absc"></span></div>
+    <h2 id="abt" style="margin:.3em 0;font-size:1.15rem"></h2>
+    <div class="abgrid" id="abgrid"></div>
+    <div id="abfb" class="fb hide"></div>
+    <button class="btn hide" id="abnext">Sonraki Karşılaştırma</button>
+  </div>
+  <button class="btn" id="abback" style="background:transparent;color:var(--ink);border:2px solid var(--line)">Ana Ekrana Dön</button>
+</section>
+
+<section id="workshop" class="hide">
+  <h1>🛠️ Öğrenci Vaka Atölyesi</h1>
+  <p class="mute">Kendi dijital dedektiflik senaryonu oluştur, oyuna ekle veya oluşturduğun özel vaka setini tek linkle sınıfına ve jüriye gönder!</p>
+  <div class="card">
+    <b>➕ Yeni Vaka Ekle</b>
+    <label class="fl">Vaka Başlığı</label>
+    <input class="fi" id="wt" placeholder="Örn. Sahte Kargo Mesajı">
+    <label class="fl">Senaryo Metni</label>
+    <textarea class="fi" id="ws" rows="3" placeholder="Örn. Telefonuna 'Kargonuz teslim edilemedi, şu linkten adres güncelleyin' mesajı geldi..."></textarea>
+    <label class="fl">Adım Kategorisi</label>
+    <select class="fi" id="wst">
+      <option value="dur">1 · DUR (Hemen inanma, paylaşma, tıklama)</option>
+      <option value="bak">2 · BAK (İpuçlarını ve ayrıntıları incele)</option>
+      <option value="dog">3 · DOĞRULA (Resmî ve güvenilir kaynağa sor)</option>
+    </select>
+    <label class="fl">Doğru Seçenek</label>
+    <input class="fi" id="wopt0" placeholder="Örn. Linke tıklamam, resmî kargo sitesinden takip numarasını kontrol ederim">
+    <label class="fl">Yanlış Seçenek 1</label>
+    <input class="fi" id="wopt1" placeholder="Örn. Hemen linke tıklayıp kart bilgilerimi girerim">
+    <label class="fl">Yanlış Seçenek 2</label>
+    <input class="fi" id="wopt2" placeholder="Örn. Mesajı arkadaşlarıma da yönlendiririm">
+    <label class="fl">Açıklama / Geri Bildirim</label>
+    <textarea class="fi" id="we" rows="2" placeholder="Örn. Tanımadığın bağlantılara tıklamadan önce DUR ve resmî kaynaktan DOĞRULA."></textarea>
+    <button class="btn" id="wadd">Vakayı Oyuna Ekle</button>
+    <p class="mute" id="wmsg" style="font-size:.85rem;margin-bottom:0"></p>
+  </div>
+  <div class="card">
+    <b>📦 Eklenen Özel Vakalar (<span id="wcnt">0</span>)</b>
+    <div id="wlist" style="margin-top:8px"></div>
+    <div style="margin-top:10px">
+      <button class="sm" id="wshare">🔗 Özel Vaka Linkini Kopyala</button>
+      <button class="sm" id="wclr">🗑️ Özel Vakaları Temizle</button>
+    </div>
+    <p class="mute" id="wsmsg" style="font-size:.85rem;margin-bottom:0"></p>
+  </div>
+  <button class="btn" id="wback" style="background:transparent;color:var(--ink);border:2px solid var(--line)">Ana Ekrana Dön</button>
+</section>
+
+<section id="poster" class="hide">
+  <div class="card noprint">
+    <b>🖨️ QR Poster</b>
+    <label class="fl">Oyunun yayın adresi (QR bu adrese gider)</label>
+    <input class="fi" id="qurl" rows="1">
+    <div id="pbtn"></div>
+    <button class="sm" id="qupd">QR’ı güncelle</button><button class="sm" id="qprint">Yazdır</button><button class="sm" id="qback">Geri</button>
+    <p class="mute" id="qnote" style="font-size:.85rem">Önce oyunu yayınladığınız son adresi kutuya yazıp “QR’ı güncelle”ye basın, sonra QR’ı telefonla deneyin.</p>
+  </div>
+  <div class="card" id="pcard" style="text-align:center;border:8px solid var(--pri)">
+    <h1 id="ph1"></h1><p id="ps" style="font-size:1.2rem;font-weight:700"></p>
+    <div id="qr" style="display:inline-block;background:#fff;padding:12px;border-radius:12px"></div>
+    <p><b>QR’ı okut, dedektif ol!</b></p>
+    <p class="mute">Kurtuluş İmam Hatip Ortaokulu · <span id="pteam"></span></p>
+    <p class="mute" style="font-size:.75rem">Kurgusal örnek görsellerle hazırlanmıştır.</p>
+  </div>
+</section>
+
+<section id="defter" class="hide">
+  <h1>📓 Yapay Zekâ Kullanım Defteri</h1>
+  <p class="mute">Bu oyunda yapay zekânın nerede ve nasıl kullanıldığını, öğrencilerin neyi değiştirdiğini açıkça gösteriyoruz.</p>
+  <div id="dlist"></div>
+  <div class="card"><b>🛡️ Etik taahhüdümüz</b>
+    <ul><li>Oyunda gerçek kişilerin görüntüsü veya sesi kullanılmadı.</li><li>Oyun kişisel bilgi istemez ve hiçbir veri kaydetmez.</li><li>Yapay zekâ fikrin yerine geçmedi; içerikler öğrenciler tarafından kontrol edilip yeniden yazıldı.</li><li>Kurgusal görseller “Kurgusal örnek görsel” etiketiyle belirtildi.</li></ul></div>
+  <button class="btn" id="dback">Geri Dön</button>
+</section>
+
+<section id="jury" class="hide">
+  <h1>📋 Jüri & Öğretmen Özet Ekranı</h1>
+  <p class="mute">Yarışma jürisi ve öğretmenlerin tüm senaryoları, doğru cevapları, ipuçlarını ve <b>DUR – BAK – DOĞRULA</b> eşleşmelerini tek ekranda inceleyebilmesi için hazırlanmıştır.</p>
+  <div id="jstats" class="steps"></div>
+  <div id="jlist"></div>
+  <button class="btn" id="jback">Ana Ekrana Dön</button>
+</section>
+
+<section id="end" class="hide">
+  <div class="card">
+    <div class="rank" id="rk"></div>
+    <div class="score" id="fs"></div>
+    <p id="rt" style="text-align:center;font-weight:700;margin:.2em 0 .4em"></p>
+    <p id="hs" class="mute" style="text-align:center;margin:0 0 1em"></p>
+    <div class="steps" id="endsteps">
+      <div><span class="badge dur">1</span><b>DUR</b><span id="sdur">Hemen inanma</span></div>
+      <div><span class="badge bak">2</span><b>BAK</b><span id="sbak">İpuçlarını ara</span></div>
+      <div><span class="badge dog">3</span><b>DOĞRULA</b><span id="sdog">Kaynağa sor</span></div>
+    </div>
+    <p id="msg" class="mute" style="text-align:center"></p>
+    <div class="cert-wrap">
+      <b>🎓 Dijital Dedektif Sertifikan</b>
+      <p class="mute" style="font-size:.85rem;margin:4px 0 8px">İsteğe bağlı adını yaz (hiçbir yere kaydedilmez) ve sertifikanı PNG olarak indir:</p>
+      <div style="display:flex;gap:8px;max-width:420px;margin:0 auto">
+        <input class="fi" id="cname" placeholder="Adın veya Takma Adın (İsteğe bağlı)" style="padding:8px">
+        <button class="sm" id="cdl" style="margin:0;white-space:nowrap;background:var(--pri);color:var(--pri-ink);border-color:var(--pri)">⬇️ İndir</button>
+      </div>
+      <canvas id="cert" class="cert-canvas" width="900" height="560"></canvas>
+    </div>
+    <button class="btn" id="again">Tekrar Oyna</button>
+  </div>
+</section>
+
+<footer><a href="#poster" style="color:inherit">QR poster</a> · <a href="#jury" style="color:inherit">Jüri özeti</a> · Hazırlayan: <span id="team2"></span> · Senaryo ve sorular öğrenciler tarafından yazılmıştır; yapay zekâ kullanımı Yapay Zekâ Kullanım Defteri’nde belirtilmiştir.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ==== TEMEL YARDIMCILAR ====
+var $ = function(id){ return document.getElementById(id); };
+var ST = { dur:["DUR","dur"], bak:["BAK","bak"], dog:["DOĞRULA","dog"] };
+
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function show(id){["start","play","end","defter","poster","jury","ablab","workshop"].forEach(function(x){if($(x))$(x).classList.toggle("hide",x!==id)});window.scrollTo(0,0)}
+function esc(s){var d=document.createElement("div");d.textContent=String(s==null?"":s);return d.innerHTML}
+
+// ==== TAKIMINIZA GÖRE DÜZENLEYİN ====
+var TAKIM = "Takım Adınız";
+var OKUL = "Kurtuluş İmam Hatip Ortaokulu";
+var VIDEO = ""; // Hikâye videosu dosya yolu, örn. "video/hikaye.mp4" (boşsa video kartı görünmez)
+// ====================================
+
+// ==== WEB AUDIO API SES EFEKTLERİ ====
+var soundOn = true, audioCtx = null;
+function beep(freq, dur, type, delay) {
+  if (!soundOn) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (delay || 0));
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime + (delay || 0));
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (delay || 0) + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(audioCtx.currentTime + (delay || 0));
+    osc.stop(audioCtx.currentTime + (delay || 0) + dur);
+  } catch (e) {}
+}
+var SFX = {
+  clue: function() { beep(780, 0.12, "triangle", 0); },
+  ok: function() { beep(523, 0.14, "sine", 0); beep(659, 0.2, "sine", 0.11); },
+  no: function() { beep(240, 0.22, "sawtooth", 0); },
+  win: function() { beep(523, 0.14, "triangle", 0); beep(659, 0.14, "triangle", 0.12); beep(784, 0.28, "triangle", 0.24); }
+};
+
+// ==== ÖZEL VAKALAR & URL PAYLAŞIM ====
+var CK = "kurtulus-ozel-vakalar-v1", customQ = [];
+function saveCustom() { try { localStorage.setItem(CK, JSON.stringify(customQ)); } catch (e) {} }
+function renderWorkshop() {
+  $("wcnt").textContent = customQ.length;
+  var h = "";
+  customQ.forEach(function(q, i) {
+    var s = ST[q.st] || ["DUR", "dur"];
+    h += '<div style="border:1px solid var(--line);border-radius:12px;padding:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>' + esc(q.t) + '</b> <span class="badge ' + s[1] + '">' + s[0] + '</span><br><small class="mute">' + esc(q.s) + '</small></div><button class="sm" style="margin:0;padding:4px 10px" data-wdel="' + i + '">Sil</button></div>';
+  });
+  $("wlist").innerHTML = h || '<p class="mute" style="font-size:.85rem;margin:4px 0">Henüz özel vaka eklenmedi.</p>';
+  var cb = $("custombanner");
+  if (customQ.length) {
+    cb.classList.remove("hide");
+    cb.innerHTML = '🛠️ <b>' + customQ.length + ' özel vaka aktif!</b> “Göreve Başla” dediğinde standart görevlerle birlikte sorulacak.';
+  } else {
+    cb.classList.add("hide");
+  }
+}
+function loadCustom() {
+  try {
+    var params = new URLSearchParams(location.search);
+    var shared = params.get("vakalar");
+    if (shared) {
+      var parsed = JSON.parse(decodeURIComponent(escape(atob(shared))));
+      if (Array.isArray(parsed) && parsed.length) { customQ = parsed; saveCustom(); }
+    } else {
+      var saved = localStorage.getItem(CK);
+      if (saved) customQ = JSON.parse(saved);
+    }
+  } catch (e) { customQ = []; }
+  renderWorkshop();
+}
+function allQ() { return Q.concat(customQ); }
+
+var Q = [
+ {i:"🖼️",t:"Garip fotoğraf",s:"Okul bahçesinde çekildiği söylenen bir fotoğrafta öğrencinin elinde altı parmak var, arkadaki tabelanın harfleri bozuk ve anlamsız.",
+  o:["Gerçek bir fotoğraf, hemen paylaşırım","Yapay zekâ üretimi olabilir; el, yazı ve gölge gibi ayrıntılara bakarım","Fotoğraf makinesi bozulmuştur"],c:1,st:"bak",
+  e:"Yapay zekâ görselleri çoğu zaman parmaklarda, yazılarda ve gölgelerde hata yapar. İpuçlarına bakmak BAK adımıdır."},
+ {i:"🎙️",t:"Sesli mesaj",s:"Arkadaşından gelen sesli mesajda “Acil para lazım, bu hesaba gönder!” deniyor. Ses biraz robotik ve tuhaf.",
+  o:["Hemen gönderirim, arkadaşım zor durumda","Durur, arkadaşımı başka yoldan ararım ve bir büyüğe danışırım","Mesajı bütün sınıfa iletirim"],c:1,st:"dur",
+  e:"Ses de taklit edilebilir. Acele ettiren mesajlar tehlike işaretidir. Önce DUR, sonra başka bir yoldan doğrula."},
+ {i:"📰",t:"Tatil haberi",s:"“Okullar yarın tatil!” yazan bir paylaşım dolaşıyor. Kaynağı yok, paylaşan hesap iki gün önce açılmış.",
+  o:["Hemen arkadaşlara iletirim","Okul idaresinin veya MEB’in resmî duyurusundan doğrularım","Çok paylaşıldığı için doğrudur"],c:1,st:"dog",
+  e:"Çok paylaşılması doğru olduğunu göstermez. Resmî kaynaktan kontrol etmek DOĞRULA adımıdır."},
+ {i:"🎁",t:"Büyük ödül",s:"“Tebrikler! Yeni telefon kazandın. Linke tıkla, adresini ve telefon numaranı yaz.”",
+  o:["Bilgilerimi yazarım, şansım varmış","Tıklamam, bilgi vermem ve bir büyüğe gösteririm","Linki arkadaşlarıma da gönderirim"],c:1,st:"dur",
+  e:"Karşılığı olmayan ödül vaatleri dolandırıcılık işaretidir. Kişisel bilgi vermeden önce DUR."},
+ {i:"⭐",t:"Fazla mükemmel yorumlar",s:"Bir oyun uygulamasının bütün yorumları 5 yıldızlı ve birbirine çok benzeyen “Harika, mükemmel, bayıldım!” cümlelerinden oluşuyor.",
+  o:["Hepsi gerçek kullanıcıdır, indiririm","Bir kısmı sahte veya yapay olabilir; farklı kaynaklardaki yorumlara da bakarım","Yıldız çoksa güvenlidir"],c:1,st:"bak",
+  e:"Birbirinin kopyası gibi duran yorumlar şüphelidir. Farklı kaynaklara bakmak hem BAK hem DOĞRULA adımıdır."},
+ {i:"🎬",t:"Hediye dağıtan video",s:"Kurgusal bir ünlü videoda “Bu linke gir, herkese hediye veriyorum!” diyor. Dudak hareketleri sesle uyuşmuyor.",
+  o:["Ünlü kendisi söylüyor, girerim","Sahte (deepfake) olabilir; kişinin resmî hesabından doğrularım","Videoyu paylaşırsam hediye kazanırım"],c:1,st:"bak",
+  e:"Dudak ve ses uyumsuzluğu, yapay zekâ ile üretilmiş videoların ipucudur. Resmî hesaptan kontrol et."},
+ {i:"📚",t:"Ödev yardımcısı",s:"Yapay zekâ sana tarihî bir olay hakkında tarih verdi ama ders kitabındaki tarih farklı.",
+  o:["Yapay zekâ hiç yanılmaz","Kitap ve güvenilir kaynaklarla karşılaştırırım; yapay zekâ yanılabilir","Kitabı yanlış sayarım"],c:1,st:"dog",
+  e:"Yapay zekâ yanlış bilgiyi çok emin bir dille söyleyebilir. Her bilgiyi güvenilir kaynakla DOĞRULA."},
+ {i:"📸",t:"Arkadaşın fotoğrafı",s:"Bir arkadaşının fotoğrafını yapay zekâ uygulamasına yükleyip komik hâle getirmek istiyorsun.",
+  o:["Sorun yok, sadece şaka","İzin almadan yüklemem; önce arkadaşımın iznini isterim","Yüklerim ama kimseye göstermem"],c:1,st:"dur",
+  e:"Başkasının fotoğrafı ve bilgisi onun mahremiyetidir. İzinsiz yüklemeden önce DUR."},
+ {i:"🏫",t:"Sınav takvimi",s:"Okulun resmî web sitesinde yayımlanan, tarihli ve imzalı bir sınav takvimi duyurusu var.",
+  o:["Her şey sahtedir, hiçbirine inanmam","Resmî kaynaktan geldiği için güvenilirdir; yine de tarihine bakarım","Önemsemem"],c:1,st:"dog",
+  e:"Her şeyden şüphelenmek de çözüm değildir. Resmî ve güncel kaynaklar güvenilirdir. Amaç doğru kaynağı bulmaktır."},
+ {i:"🎨",t:"Kimin çizimi?",s:"Bir arkadaşın yapay zekâyla ürettiği resmi “Kendi çizimim” diyerek yarışmaya gönderdi.",
+  o:["Normal, herkes yapıyor","Yapay zekâ kullandığını açıkça belirtmeli","Resim güzelse sorun yok"],c:1,st:"dur",
+  e:"Yapay zekâ kullanımını saklamak dürüst değildir. Kullandığın aracı ve katkını açıkça yaz."},
+ {i:"🔗",t:"Şüpheli link",s:"Tanımadığın biri sana “Ödevin cevapları burada” diyerek kısa bir link gönderdi.",
+  o:["Tıklarım, işime yarar","Tıklamam; öğretmenime veya ailemden birine sorarım","Linki sınıf grubuna atarım"],c:1,st:"dur",
+  e:"Tanımadığın kişilerden gelen linkler zararlı olabilir. Tıklamadan önce DUR ve güvendiğin bir büyüğe danış."}
+];
+var cap='<div class="mute" style="font-size:.75rem;text-align:right;margin-top:4px">Kurgusal örnek görsel</div>';
+var GORSEL={};
+function sc(bg,x,l){return '<svg class="sv" viewBox="0 0 300 160" role="img" aria-label="'+l+'"><rect width="300" height="160" rx="12" fill="'+bg+'"/>'+x+'</svg>'}
+function tx(x,y,s,t,f,w,a){return '<text x="'+x+'" y="'+y+'" font-size="'+s+'" fill="'+(f||'#1d2540')+'"'+(w?' font-weight="700"':'')+(a?' text-anchor="middle"':'')+'>'+t+'</text>'}
+function cl(x,y,r,t,c){c=c||'#e03131';return '<g class="clue"><circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="none" stroke="'+c+'" stroke-width="3" stroke-dasharray="5 3"/>'+tx(x,y+r+12,10,t,c,1,1)+'</g>'}
+function cr(x,y,w,h,t,c){c=c||'#e03131';return '<g class="clue"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="8" fill="none" stroke="'+c+'" stroke-width="3" stroke-dasharray="5 3"/>'+tx(x+w/2,y+h+12,10,t,c,1,1)+'</g>'}
+function bars(x,y,n,d,c){var o='';for(var i=0;i<n;i++)o+='<rect class="wv" x="'+(x+i*9)+'" y="'+(y-12)+'" width="5" height="24" rx="2" fill="'+c+'" style="animation-delay:'+(i*d)+'s"/>';return o}
+var V={};
+V["Garip fotoğraf"]=sc('#bfe3ff','<rect y="112" width="300" height="48" fill="#8fd18f"/><rect x="20" y="42" width="120" height="72" fill="#e8c9a0"/><rect x="32" y="22" width="96" height="24" rx="4" fill="#fff"/>'+tx(80,39,13,'ÖKXLA Ğ§Ш','#333',1,1)+'<circle cx="210" cy="62" r="17" fill="#f1c27d"/><rect x="192" y="80" width="38" height="46" rx="10" fill="#4263eb"/><rect x="232" y="70" width="9" height="30" fill="#f1c27d"/><g fill="#f1c27d"><rect x="221" y="56" width="4" height="14"/><rect x="226" y="50" width="4" height="20"/><rect x="231" y="48" width="4" height="22"/><rect x="236" y="48" width="4" height="22"/><rect x="241" y="50" width="4" height="20"/><rect x="246" y="52" width="4" height="18"/></g>'+cl(236,60,24,'6 parmak')+cl(80,34,34,'bozuk yazı'),'Okul bahçesinde bir öğrenci fotoğrafı');
+V["Sesli mesaj"]=sc('#e7f5ff','<rect x="90" y="10" width="120" height="140" rx="16" fill="#fff" stroke="#adb5bd" stroke-width="3"/>'+tx(150,36,11,'Arkadaşım 🎙️','#333',1,1)+bars(112,80,9,.1,'#4263eb')+tx(150,122,10,'“Acil para lazım!”','#c92a2a',1,1)+cl(150,80,44,'robotik ses'),'Sesli mesaj ekranı');
+V["Tatil haberi"]=sc('#fff4e6','<rect x="20" y="14" width="260" height="132" rx="10" fill="#fff" stroke="#ced4da"/><circle cx="42" cy="36" r="12" fill="#adb5bd"/>'+tx(62,34,10,'@son_dakika_haber','#333',1)+tx(62,46,9,'Hesap 2 gün önce açıldı','#868e96')+tx(150,92,16,'OKULLAR YARIN TATİL!!!','#c92a2a',1,1)+tx(150,116,10,'Kaynak: yok','#868e96',0,1)+cr(30,22,150,30,'yeni hesap')+cr(100,102,100,20,'kaynak yok'),'Haber paylaşımı');
+V["Büyük ödül"]=sc('#f3d9fa','<rect x="40" y="12" width="220" height="136" rx="12" fill="#fff"/>'+tx(150,44,26,'🎁','#000',0,1)+tx(150,66,13,'TEBRİKLER! Telefon kazandın','#7048e8',1,1)+'<rect x="70" y="76" width="160" height="16" rx="4" fill="#f1f3f5" stroke="#ced4da"/><rect x="70" y="97" width="160" height="16" rx="4" fill="#f1f3f5" stroke="#ced4da"/>'+tx(76,88,9,'Adres','#868e96')+tx(76,109,9,'Telefon numarası','#868e96')+'<rect x="100" y="120" width="100" height="22" rx="11" fill="#f03e3e"/>'+tx(150,135,10,'HEMEN AL!','#fff',1,1)+cr(62,72,176,44,'kişisel bilgi isteniyor'),'Ödül kazandın penceresi');
+V["Fazla mükemmel yorumlar"]=sc('#e6fcf5','<rect x="20" y="12" width="260" height="136" rx="10" fill="#fff"/>'+[0,1,2,3].map(function(i){return tx(30,38+i*26,10,'★★★★★ “Harika, mükemmel, bayıldım!”','#e67700',1)}).join('')+cr(24,22,252,94,'aynı cümleler'),'Uygulama yorumları');
+V["Hediye dağıtan video"]=sc('#212529','<rect x="20" y="10" width="260" height="112" rx="8" fill="#343a40"/><circle cx="110" cy="56" r="30" fill="#f1c27d"/><circle cx="100" cy="48" r="3" fill="#333"/><circle cx="120" cy="48" r="3" fill="#333"/><ellipse class="wv" style="animation-duration:.45s" cx="110" cy="70" rx="9" ry="6" fill="#7d2b2b"/>'+bars(175,56,8,.13,'#74c0fc')+tx(150,112,10,'“Bu linke gir, hediye veriyorum!”','#fff',0,1)+'<polygon points="30,134 40,140 30,146" fill="#fff"/><rect x="48" y="138" width="220" height="4" rx="2" fill="#495057"/><rect x="48" y="138" width="80" height="4" rx="2" fill="#74c0fc"/>'+cl(110,70,20,'dudak ≠ ses'),'Video kareleri');
+V["Ödev yardımcısı"]=sc('#edf2ff','<rect x="14" y="14" width="130" height="112" rx="10" fill="#fff"/><rect x="156" y="14" width="130" height="112" rx="10" fill="#fff"/>'+tx(79,36,11,'🤖 Yapay zekâ','#4263eb',1,1)+tx(79,62,10,'İstanbul’un fethi','#333',0,1)+tx(79,92,22,'1435','#c92a2a',1,1)+tx(221,36,11,'📖 Ders kitabı','#2b8a3e',1,1)+tx(221,62,10,'İstanbul’un fethi','#333',0,1)+tx(221,92,22,'1453','#2b8a3e',1,1)+cr(40,72,220,28,'tarihler farklı'),'Yapay zekâ ve kitap karşılaştırması');
+V["Arkadaşın fotoğrafı"]=sc('#fff0f6','<rect x="20" y="30" width="80" height="100" rx="10" fill="#fff"/><circle cx="60" cy="68" r="22" fill="#f1c27d"/><circle cx="52" cy="64" r="3" fill="#333"/><circle cx="68" cy="64" r="3" fill="#333"/><path d="M50 76 Q60 86 70 76" stroke="#333" fill="none" stroke-width="2"/><text x="150" y="92" font-size="30" text-anchor="middle">➜</text><rect x="200" y="30" width="80" height="100" rx="10" fill="#fff"/><circle cx="240" cy="68" r="22" fill="#f1c27d"/><circle cx="231" cy="62" r="7" fill="#fff" stroke="#333"/><circle cx="249" cy="62" r="7" fill="#fff" stroke="#333"/><ellipse cx="240" cy="82" rx="10" ry="8" fill="#e03131"/>'+tx(150,52,9,'Yapay zekâ','#862e9c',1,1)+tx(150,64,9,'uygulaması','#862e9c',1,1)+cr(16,26,88,104,'izni sordun mu?'),'Fotoğrafı değiştiren uygulama');
+V["Sınav takvimi"]=sc('#ebfbee','<rect x="40" y="12" width="220" height="136" rx="8" fill="#fff" stroke="#2b8a3e" stroke-width="2"/>'+tx(52,32,9,'🔒 okulunsitesi.meb.k12.tr','#2b8a3e',1)+tx(150,70,14,'SINAV TAKVİMİ','#1d2540',1,1)+tx(150,92,10,'Örnek: 2. Yazılı – 15 Ocak','#333',0,1)+'<line x1="170" y1="126" x2="240" y2="126" stroke="#333"/>'+tx(205,140,9,'Okul Müdürü','#333',0,1)+cr(46,18,208,22,'resmî adres','#2b8a3e')+cr(150,80,100,64,'tarih + imza','#2b8a3e'),'Resmî duyuru sayfası');
+V["Kimin çizimi?"]=sc('#fff9db','<rect x="90" y="12" width="120" height="94" fill="#fff" stroke="#8d6e63" stroke-width="4"/><circle cx="130" cy="44" r="14" fill="#fcc419"/><path d="M96 100 L130 66 L160 90 L180 72 L204 100Z" fill="#37b24d"/><text x="196" y="102" font-size="7" fill="#fff" opacity=".6">AI</text><rect x="100" y="126" width="100" height="22" rx="11" fill="#fff" stroke="#adb5bd"/>'+tx(150,141,10,'“Kendi çizimim!”','#333',1,1)+cr(94,16,112,86,'AI etiketi yok'),'Yarışmaya gönderilen resim');
+V["Şüpheli link"]=sc('#e3fafc','<rect x="30" y="14" width="240" height="132" rx="12" fill="#fff"/><circle cx="56" cy="38" r="12" fill="#adb5bd"/>'+tx(76,36,10,'Bilinmeyen kişi','#333',1)+tx(76,48,8,'Tanımıyorsun','#868e96')+'<rect x="50" y="62" width="190" height="30" rx="10" fill="#e9ecef"/>'+tx(60,81,10,'Ödevin cevapları burada 👇','#333')+'<rect x="50" y="98" width="140" height="24" rx="10" fill="#d0ebff"/>'+tx(60,114,10,'kisa.link/x9-cevap','#1c7ed6',1)+cr(46,96,148,28,'şüpheli link'),'Tanımadığın kişiden gelen link');
+function vis(q){var s=V[q.t]||sc('#edf2ff',tx(150,84,14,'🛠️ '+esc(q.t),'#1d2540',1,1),q.t),g=GORSEL[q.t];if(!g)return s+cap;var f=' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"';var m=/\.(mp4|webm)$/i.test(g)?'<video class="sv" src="'+g+'" controls playsinline'+f+'></video>':'<img class="sv" src="'+g+'" alt="'+q.t+'"'+f+'>';return m+'<div style="display:none">'+s+'</div>'+cap}
+
+// ==== GERÇEK VS YAPAY A/B LABORATUVARI ====
+var AB = [
+  {
+    t: "Karşılaştırma 1: Bilim Haber Görseli",
+    a: { tag: "Örnek A", title: "Kutup Ayısı & Buzul", desc: "Buzulların üzerinde yürüyen kutup ayısı; arka planda net dağ silüeti ve doğal ışık.", ai: false },
+    b: { tag: "Örnek B", title: "Kutup Ayısı & Buzul", desc: "Ayının arka patisinde 6 parmak var; su yansıması ayının duruşuyla uyuşmuyor.", ai: true },
+    e: "Örnek B'deki ek parmak ve tutarsız su yansıması yapay zekâ üretim izidir. Gerçek görsellerde fizik ve anatomi tutarlılığı korunur."
+  },
+  {
+    t: "Karşılaştırma 2: Duyuru Mesajı",
+    a: { tag: "Örnek A", title: "Acil Şifre Sıfırlama", desc: "“Hesabınız 1 saat içinde kapanacak! Hemen şu kısa bağlantıdan şifrenizi onaylayın.”", ai: true },
+    b: { tag: "Örnek B", title: "Bakım Bilgilendirmesi", desc: "“Sistemimiz yarın 02.00–04.00 saatleri arasında planlı bakım nedeniyle kısa süreli kapalı olacaktır.”", ai: false },
+    e: "Sahte/yapay manipülasyon mesajları panik ve aciliyet üretip kısa link ister; güvenilir duyurular net bilgi verir ve şifre istemez."
+  },
+  {
+    t: "Karşılaştırma 3: Tarih Bilgisi Özeti",
+    a: { tag: "Örnek A", title: "İlk Türkçe Sözlük", desc: "Kaşgarlı Mahmud tarafından 11. yüzyılda yazılan Divânu Lugâti't-Türk Türk dilinin önemli kaynaklarındandır.", ai: false },
+    b: { tag: "Örnek B", title: "İlk Türkçe Sözlük", desc: "Divânu Lugâti't-Türk 1890 yılında matbaada basılmış ve yazarı Evliya Çelebi'dir.", ai: true },
+    e: "Yapay zekâ bazen kulağa mantıklı gelen ama tarihî gerçeklerle çelişen bilgiler üretebilir; her zaman güvenilir kaynakla doğrulayın."
+  }
+];
+var abIdx = 0, abScore = 0, abLocked = false;
+function loadAB() {
+  abLocked = false;
+  var item = AB[abIdx];
+  $("abn").textContent = "Karşılaştırma " + (abIdx + 1) + " / " + AB.length;
+  $("absc").textContent = "Puan: " + abScore;
+  $("abt").textContent = item.t;
+  $("abfb").className = "fb hide";
+  $("abnext").classList.add("hide");
+  var pairs = shuffle([
+    { key: "a", data: item.a },
+    { key: "b", data: item.b }
+  ]);
+  $("abgrid").innerHTML = "";
+  pairs.forEach(function(p) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "abcard";
+    btn.innerHTML = '<span class="badge bak">' + esc(p.data.tag) + '</span><h3 style="margin:.45em 0 .25em;font-size:1.05rem">' + esc(p.data.title) + '</h3><p class="mute" style="margin:0;font-size:.9rem">' + esc(p.data.desc) + '</p>';
+    btn.onclick = function() {
+      if (abLocked) return;
+      abLocked = true;
+      var right = !!p.data.ai;
+      if (right) { abScore++; SFX.ok(); } else { SFX.no(); }
+      $("absc").textContent = "Puan: " + abScore;
+      btn.classList.add(right ? "ok" : "no");
+      $("abfb").className = "fb " + (right ? "ok" : "no");
+      $("abfb").innerHTML = "<b>" + (right ? "Doğru tespit! Yapay/yanıltıcı örneği buldun ✅" : "Dikkat! Yapay/yanıltıcı olan diğer örnekti ❌") + "</b><br>" + esc(item.e);
+      $("abnext").textContent = (abIdx === AB.length - 1) ? "Laboratuvarı Bitir" : "Sonraki Karşılaştırma";
+      $("abnext").classList.remove("hide");
+    };
+    $("abgrid").appendChild(btn);
+  });
+}
+function startAB() {
+  abIdx = 0; abScore = 0;
+  show("ablab");
+  loadAB();
+}
+
+var n=0,score=0,locked=false,order=[],activeQ=[],fT=0,cT=0,stStat={dur:[0,0],bak:[0,0],dog:[0,0]};
+$("abnext").onclick = function() {
+  if (abIdx === AB.length - 1) {
+    $("abfb").className = "fb ok";
+    $("abfb").innerHTML = "<b>🎉 Laboratuvar Tamamlandı!</b> Toplam puanın: <b>" + abScore + " / " + AB.length + "</b>.";
+    $("abnext").classList.add("hide");
+    SFX.win();
+  } else {
+    abIdx++;
+    loadAB();
+  }
+};
+(function(){
+  var vb=$("visbox"),ln=$("lens");
+  function moveLens(clientX,clientY){
+    if(!vb.classList.contains("loupe-on"))return;
+    var r=vb.getBoundingClientRect();
+    var x=Math.max(0,Math.min(clientX-r.left,r.width));
+    var y=Math.max(0,Math.min(clientY-r.top,r.height));
+    ln.style.left=x+"px";ln.style.top=y+"px";
+  }
+  vb.addEventListener("mousemove",function(e){moveLens(e.clientX,e.clientY);});
+  vb.addEventListener("touchmove",function(e){if(e.touches&&e.touches[0])moveLens(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+  $("loupebtn").onclick=function(){
+    var on=vb.classList.toggle("loupe-on");
+    this.style.borderColor=on?"var(--pri)":"var(--line)";
+  };
+  $("xraybtn").onclick=function(){
+    var on=vb.classList.toggle("xray");
+    this.style.borderColor=on?"var(--pri)":"var(--line)";
+  };
+})();
+
+function start(){activeQ=allQ();n=0;score=0;fT=0;cT=0;stStat={dur:[0,0],bak:[0,0],dog:[0,0]};order=shuffle(activeQ.map(function(_,i){return i}));show("play");load()}
+function load(){
+  locked=false;var q=activeQ[order[n]];
+  if(window.speechSynthesis)try{speechSynthesis.cancel()}catch(e){}
+  $("qn").textContent="Görev "+(n+1)+" / "+activeQ.length;
+  $("sc").textContent="Puan: "+score;
+  $("pb").style.width=(n/activeQ.length*100)+"%";
+  $("ic").innerHTML=vis(q);hunt();$("qt").textContent=q.t;$("qs").textContent="“"+q.s+"”";
+  var idx=shuffle(q.o.map(function(_,i){return i}));
+  $("opts").innerHTML="";
+  idx.forEach(function(k){
+    var b=document.createElement("button");b.className="opt";b.textContent=q.o[k];
+    b.onclick=function(){pick(b,k===q.c)};b.dataset.right=(k===q.c);
+    $("opts").appendChild(b)});
+  $("fb").className="fb hide";$("next").classList.add("hide");
+}
+function pick(btn,right){
+  if(locked)return;locked=true;var q=activeQ[order[n]];
+  stStat[q.st][1]++;
+  if(right){score++;stStat[q.st][0]++;SFX.ok();}else{SFX.no();}
+  document.querySelectorAll(".opt").forEach(function(b){b.disabled=true;if(b.dataset.right==="true")b.classList.add("ok")});
+  if(!right)btn.classList.add("no");
+  var s=ST[q.st];var sv=$("ic").querySelector("svg");if(sv)sv.classList.add("reveal");
+  $("fb").className="fb "+(right?"ok":"no");
+  $("fb").innerHTML="<b>"+(right?"Harika, doğru karar! ✅":"Bu sefer olmadı ❌")+"</b> <span class=\"badge "+s[1]+"\">"+s[0]+"</span><br>"+esc(q.e)+"<br><small>🔴 Kırmızı çerçeveler görseldeki ipuçlarını gösteriyor.</small>";
+  $("sc").textContent="Puan: "+score;
+  $("next").textContent=(n===activeQ.length-1)?"Sonucu Gör":"Sonraki";
+  $("next").classList.remove("hide");
+}
+function drawCert(rankTitle){
+  var c=$("cert");if(!c||!c.getContext)return;
+  var ctx=c.getContext("2d"),w=c.width,h=c.height;
+  var nm=($("cname").value||"").trim()||"Dijital Dedektif";
+  ctx.fillStyle="#f4f6fb";ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle="#3b5bdb";ctx.lineWidth=14;ctx.strokeRect(22,22,w-44,h-44);
+  ctx.strokeStyle="#748ffc";ctx.lineWidth=3;ctx.strokeRect(38,38,w-76,h-76);
+  ctx.fillStyle="#3b5bdb";ctx.font="bold 24px system-ui,sans-serif";ctx.textAlign="center";
+  ctx.fillText("GERÇEK Mİ, YAPAY MI? · DİJİTAL DEDEKTİFLER",w/2,95);
+  ctx.fillStyle="#1d2540";ctx.font="bold 40px system-ui,sans-serif";
+  ctx.fillText("BAŞARI SERTİFİKASI",w/2,155);
+  ctx.fillStyle="#5b6485";ctx.font="20px system-ui,sans-serif";
+  ctx.fillText("Bu belge, dijital okuryazarlık görevlerini tamamlayan",w/2,205);
+  ctx.fillStyle="#e8590c";ctx.font="bold 38px system-ui,sans-serif";
+  ctx.fillText(nm,w/2,265);
+  ctx.fillStyle="#1d2540";ctx.font="bold 26px system-ui,sans-serif";
+  ctx.fillText("Unvan: "+rankTitle+"  ·  Puan: "+score+" / "+activeQ.length,w/2,325);
+  ctx.fillStyle="#2f9e44";ctx.font="bold 20px system-ui,sans-serif";
+  ctx.fillText("DUR: "+stStat.dur[0]+"/"+stStat.dur[1]+"   •   BAK: "+stStat.bak[0]+"/"+stStat.bak[1]+"   •   DOĞRULA: "+stStat.dog[0]+"/"+stStat.dog[1],w/2,375);
+  ctx.fillStyle="#5b6485";ctx.font="18px system-ui,sans-serif";
+  ctx.fillText(OKUL+" · "+TAKIM,w/2,445);
+  ctx.font="15px system-ui,sans-serif";
+  ctx.fillText("Tarih: "+new Date().toLocaleDateString("tr-TR"),w/2,480);
+}
+var lastRank="Dedektif";
+function finish(){
+  $("pb").style.width="100%";show("end");SFX.win();
+  var pct=score/activeQ.length;
+  var r=pct>=0.85?["🏆","Baş Dedektif"]:pct>=0.65?["🥇","Dedektif"]:pct>=0.45?["🔍","Dedektif Çırağı"]:["🌱","Yeni Başlayan"];
+  lastRank=r[1];
+  $("hs").textContent=cT?"🔎 Bulduğun ipucu: "+fT+" / "+cT:"";$("rk").textContent=r[0];$("fs").textContent=score+" / "+activeQ.length;$("rt").textContent="Rozetin: "+r[1];
+  $("sdur").textContent=stStat.dur[0]+" / "+stStat.dur[1]+" doğru";
+  $("sbak").textContent=stStat.bak[0]+" / "+stStat.bak[1]+" doğru";
+  $("sdog").textContent=stStat.dog[0]+" / "+stStat.dog[1]+" doğru";
+  $("msg").textContent=pct>=0.65?"Harikasın! Şimdi öğrendiklerini arkadaşlarına da anlat: Dur – Bak – Doğrula.":"Sorun değil, dedektifler pratikle gelişir. Tekrar oynayıp ipuçlarını yakalamayı dene!";
+  drawCert(lastRank);
+}
+function speakNow(){
+  var q=activeQ[order[n]];if(!q)return;
+  if(!("speechSynthesis" in window))return;
+  try{
+    speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(q.t+". "+q.s);
+    u.lang="tr-TR";u.rate=0.95;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function renderJury(){
+  var list=allQ(),cnt={dur:0,bak:0,dog:0};list.forEach(function(q){cnt[q.st]++});
+  $("jstats").innerHTML='<div><span class="badge dur">DUR</span><b>'+cnt.dur+' Görev</b></div><div><span class="badge bak">BAK</span><b>'+cnt.bak+' Görev</b></div><div><span class="badge dog">DOĞRULA</span><b>'+cnt.dog+' Görev</b></div>';
+  var h="";
+  list.forEach(function(q,idx){
+    var s=ST[q.st];
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>'+(idx+1)+'. '+q.i+' '+esc(q.t)+(q.custom?' (Özel Vaka)':'')+'</b><span class="badge '+s[1]+'">'+s[0]+'</span></div><p style="margin:8px 0">“'+esc(q.s)+'”</p><p style="margin:6px 0;color:var(--ok)"><b>✅ Doğru Karar:</b> '+esc(q.o[q.c])+'</p><p class="mute" style="margin:6px 0 0;font-size:.9rem"><b>💡 Pedagojik Açıklama:</b> '+esc(q.e)+'</p></div>';
+  });
+  $("jlist").innerHTML=h;
+}
+function hunt(){var cs=$("ic").querySelectorAll(".clue"),f=0,t=cs.length,h=$("hunt"),m="🔎 İpucu avı: görselde şüpheli yerlere dokun (";cT+=t;h.textContent=t?m+"0/"+t+")":"";Array.prototype.forEach.call(cs,function(c){c.onclick=function(){if(locked||c.classList.contains("found"))return;c.classList.add("found");f++;fT++;SFX.clue();h.textContent=f===t?"🔎 Tüm ipuçlarını buldun! Şimdi karar ver.":m+f+"/"+t+")"}})}
+// ==== KULLANIM DEFTERİ: [ ] içindeki yerleri takımınız doldursun ====
+var DEFTER=[
+ {a:"Claude (yapay zekâ asistanı)",n:"Oyunun kod iskeleti, ilk senaryo taslakları ve kurgusal görsellerin çizimleri",o:"[Takım doldurur: Taslak soruları nasıl değiştirdik, hangi soruları kendimiz yazdık?]"},
+ {a:"[Görsel aracı – örn. Canva]",n:"[Takım doldurur: Hangi görseli, ne için ürettik?]",o:"[Takım doldurur: Çıktıyı nasıl kontrol edip düzenledik?]"}
+];
+function ph(s){return s.charAt(0)==="["?'<span class="ph">'+esc(s)+'</span>':esc(s)}
+function renderDefter(){var h="";DEFTER.forEach(function(d){h+='<div class="card"><b>🤖 '+ph(d.a)+'</b><p><u>Ne için kullandık?</u><br>'+ph(d.n)+'</p><p><u>Öğrenciler ne yaptı?</u><br>'+ph(d.o)+'</p></div>'});h+='<div class="card"><b>✏️ Önce / Sonra örneği</b><p><u>Yapay zekânın ilk önerisi:</u><br>'+ph("[Takım doldurur: AI’nın yazdığı ilk soru veya metin]")+'</p><p><u>Bizim son hâlimiz:</u><br>'+ph("[Takım doldurur: öğrencilerin düzenlediği hâl]")+'</p></div>';$("dlist").innerHTML=h}
+var DK="kurtulus-defter-v1",DD=null;
+function dget(){try{var s=localStorage.getItem(DK);if(s)return JSON.parse(s)}catch(e){}return {t:[{a:"Claude (yapay zekâ asistanı)",n:"Oyunun kod iskeleti, ilk senaryo taslakları ve kurgusal görsellerin çizimleri",o:""}],b:"",s:""}}
+function dsave(){try{localStorage.setItem(DK,JSON.stringify(DD))}catch(e){}}
+function ta(l,f,i,v,p,r){return '<label class="fl">'+l+'</label><textarea class="fi" data-f="'+f+'" data-i="'+i+'" rows="'+r+'" placeholder="'+p+'">'+esc(v||'')+'</textarea>'}
+function renderForm(){DD=dget();var h='';DD.t.forEach(function(d,i){h+='<div class="card"><b>🤖 Araç '+(i+1)+'</b>'+ta('Araç / uygulama adı','a',i,d.a,'Örn. Canva, Bing Image Creator',1)+ta('Ne için kullandık?','n',i,d.n,'Örn. Karakter görseli üretmek için',3)+ta('Öğrenciler ne yaptı? (AI çıktısını nasıl kontrol edip değiştirdiniz?)','o',i,d.o,'Örn. Görseldeki bozuk yazıyı düzelttik, renkleri değiştirdik',3)+(DD.t.length>1?'<button class="sm" data-x="'+i+'">Bu aracı sil</button>':'')+'</div>'});h+='<button class="sm" id="dadd">➕ Araç ekle</button><div class="card"><b>✏️ Önce / Sonra örneği</b>'+ta('Yapay zekânın ilk önerisi','b',0,DD.b,'AI’nın yazdığı ilk soru veya metni yapıştırın',3)+ta('Bizim son hâlimiz','s',0,DD.s,'Öğrencilerin düzenlediği hâl',3)+'</div><div><button class="sm" id="dcopy">📋 Metni kopyala (Ek-2 için)</button><button class="sm" id="dclr">🗑️ Temizle</button></div><p class="mute" id="dmsg" style="font-size:.85rem"></p><p class="mute" style="font-size:.8rem">Yazdıklarınız bu cihazın tarayıcısında otomatik saklanır; başka cihazda veya başka kişide görünmez.</p>';$("dlist").innerHTML=h}
+function copyD(){var s="YAPAY ZEKÂ KULLANIM DEFTERİ\n\n",m=$("dmsg");DD.t.forEach(function(d,i){s+="Araç "+(i+1)+": "+d.a+"\nKullanım amacı: "+d.n+"\nÖğrenci katkısı: "+d.o+"\n\n"});s+="AI’nın ilk önerisi: "+DD.b+"\nBizim son hâlimiz: "+DD.s;function fb(){var a=document.createElement("textarea");a.value=s;document.body.appendChild(a);a.select();try{document.execCommand("copy");m.textContent="Kopyalandı ✅"}catch(e){m.textContent="Kopyalanamadı; metni elle seçip kopyalayın."}document.body.removeChild(a)}try{navigator.clipboard.writeText(s).then(function(){m.textContent="Kopyalandı ✅"},fb)}catch(e){fb()}}
+$("dlist").addEventListener("input",function(e){var t=e.target,f=t.dataset.f;if(!f)return;if(f==="b"||f==="s")DD[f]=t.value;else DD.t[+t.dataset.i][f]=t.value;dsave()});
+$("dlist").addEventListener("click",function(e){var t=e.target;if(t.id==="dadd"){DD.t.push({a:"",n:"",o:""});dsave();renderForm()}else if(t.dataset.x){DD.t.splice(+t.dataset.x,1);dsave();renderForm()}else if(t.id==="dclr"){if(t.dataset.c){DD={t:[{a:"",n:"",o:""}],b:"",s:""};dsave();renderForm()}else{t.dataset.c=1;t.textContent="Emin misin? Tekrar dokun"}}else if(t.id==="dcopy"){copyD()}});
+var PO=[{l:"Genel",h:"DUR • BAK • DOĞRULA",s:"Gördüğün her şey gerçek mi?",c:"#3b5bdb"},{l:"DUR",h:"1 · DUR",s:"Gelen mesajı hemen paylaşma!",c:"#e8590c"},{l:"BAK",h:"2 · BAK",s:"Fotoğrafta, sesde, yazıda ipucu ara!",c:"#1c7ed6"},{l:"DOĞRULA",h:"3 · DOĞRULA",s:"Resmî kaynağa sor, sonra karar ver!",c:"#2f9e44"}],pi=0;
+function mkqr(t){var q=$("qr");q.innerHTML="";try{new QRCode(q,{text:t,width:200,height:200})}catch(e){q.textContent="QR oluşturulamadı"}}
+function renderPoster(){var p=PO[pi],u=$("qurl"),b="";$("pcard").style.borderColor=p.c;$("ph1").textContent=p.h;$("ph1").style.color=p.c;$("ps").textContent=p.s;$("pteam").textContent=TAKIM;if(!u.value)u.value=location.href.split("#")[0];mkqr(u.value);PO.forEach(function(x,i){b+='<button class="sm" data-p="'+i+'">'+x.l+'</button>'});$("pbtn").innerHTML=b}
+$("pbtn").addEventListener("click",function(e){var i=e.target.dataset.p;if(i!==undefined){pi=+i;renderPoster()}});
+$("qupd").onclick=function(){mkqr($("qurl").value)};
+$("qprint").onclick=function(){try{window.print()}catch(e){}$("qnote").textContent="Yazdır açılmazsa sayfayı kendi tarayıcınızda açıp Ctrl+P ile yazdırın veya ekran görüntüsü alın."};
+$("qback").onclick=function(){location.hash="";show("start")};
+function route(){if(location.hash==="#poster"){renderPoster();show("poster")}else if(location.hash==="#jury"){renderJury();show("jury")}else if(!$("poster").classList.contains("hide")||!$("jury").classList.contains("hide")){show("start")}}
+window.addEventListener("hashchange",route);route();
+if(VIDEO){var vd=$("vid");vd.classList.remove("hide");vd.innerHTML='<b>🎬 Önce hikâyeyi izle (60 sn)</b><video class="sv" src="'+VIDEO+'" controls playsinline preload="metadata" onerror="this.parentNode.classList.add(\'hide\')"></video>'}
+$("dopen").onclick=function(){renderForm();show("defter")};$("dback").onclick=function(){show("start")};
+$("jopen").onclick=function(){renderJury();show("jury")};$("jback").onclick=function(){location.hash="";show("start")};
+$("abopen").onclick=startAB;$("abback").onclick=function(){show("start")};
+$("wopen").onclick=function(){renderWorkshop();show("workshop")};$("wback").onclick=function(){show("start")};
+$("wadd").onclick=function(){
+  var t=$("wt").value.trim(),s=$("ws").value.trim(),st=$("wst").value,o0=$("wopt0").value.trim(),o1=$("wopt1").value.trim(),o2=$("wopt2").value.trim(),e=$("we").value.trim();
+  if(!t||!s||!o0||!o1){$("wmsg").textContent="Lütfen başlık, senaryo, doğru seçenek ve en az bir yanlış seçenek girin.";return;}
+  var opts=[o0,o1];if(o2)opts.push(o2);
+  customQ.push({i:"🛠️",t:t,s:s,o:opts,c:0,st:st,e:e||"Dur – Bak – Doğrula adımlarını uygulayarak doğru kaynağa ulaştın.",custom:true});
+  saveCustom();renderWorkshop();SFX.ok();
+  ["wt","ws","wopt0","wopt1","wopt2","we"].forEach(function(id){$(id).value=""});
+  $("wmsg").textContent="Vaka eklendi ✅ Ana ekrandan 'Göreve Başla' diyerek çözebilir veya linkle paylaşabilirsin.";
+};
+$("wlist").addEventListener("click",function(e){
+  var idx=e.target.dataset.wdel;if(idx===undefined)return;
+  customQ.splice(+idx,1);saveCustom();renderWorkshop();
+});
+$("wclr").onclick=function(){customQ=[];saveCustom();renderWorkshop();$("wsmsg").textContent="Özel vakalar temizlendi."};
+$("wshare").onclick=function(){
+  if(!customQ.length){$("wsmsg").textContent="Paylaşmak için önce en az 1 özel vaka ekleyin.";return;}
+  var enc=btoa(unescape(encodeURIComponent(JSON.stringify(customQ))));
+  var url=location.href.split("?")[0].split("#")[0]+"?vakalar="+encodeURIComponent(enc);
+  var a=document.createElement("textarea");a.value=url;document.body.appendChild(a);a.select();
+  try{document.execCommand("copy");$("wsmsg").textContent="Özel vaka linki kopyalandı ✅ Bu linki açan herkes senin vakalarını da oynayabilir!";}
+  catch(e){$("wsmsg").textContent="Link oluşturuldu ama otomatik kopyalanamadı."}
+  document.body.removeChild(a);
+};
+$("cname").addEventListener("input",function(){drawCert(lastRank)});
+$("cdl").onclick=function(){
+  drawCert(lastRank);
+  var a=document.createElement("a");a.download="dijital-dedektif-sertifikasi.png";
+  a.href=$("cert").toDataURL("image/png");a.click();
+};
+$("sndbtn").onclick=function(){
+  soundOn=!soundOn;
+  this.textContent=soundOn?"🔔 Ses Açık":"🔕 Sessiz";
+  if(soundOn)SFX.clue();
+};
+$("speak").onclick=speakNow;
+$("go").onclick=start;$("again").onclick=start;
+$("next").onclick=function(){if(n===activeQ.length-1)finish();else{n++;load()}};
+loadCustom();
+$("team").textContent=TAKIM+" · "+OKUL;$("team2").textContent=TAKIM;
+</script>
+</body>
+</html>
